@@ -2,9 +2,6 @@ import json
 import requests
 requests.packages.urllib3.disable_warnings()
 
-# Router IP Address is 10.0.15.181-184
-# api_url = "https://10.0.15.62/restconf/data"
-
 studentID = "66070100"
 
 # the RESTCONF HTTP headers, including the Accept and Content-Type
@@ -14,7 +11,6 @@ headers = {
     "Content-Type": "application/yang-data+json"
 }  #--------------------------------------------------------------------------------------
 basicauth = ("admin", "cisco")
-
 
 def create(router_ip):
     api_url = f"https://{router_ip}/restconf/data"
@@ -128,8 +124,8 @@ def status(router_ip):
     if(resp.status_code >= 200 and resp.status_code <= 299):
         print("STATUS OK: {}".format(resp.status_code))
         response_json = resp.json()
-        admin_status = response_json["ietf-interfaces:interface"]["admin-status"] #-----------------------------------
-        oper_status = response_json["ietf-interfaces:interface"]["oper-status"]  #-----------------------------------
+        admin_status = response_json["ietf-interfaces:interface"]["admin-status"]
+        oper_status = response_json["ietf-interfaces:interface"]["oper-status"]
         if admin_status == 'up' and oper_status == 'up':
             return f"Interface loopback {studentID} is enabled (checked by Restconf)"
         elif admin_status == 'down' and oper_status == 'down':

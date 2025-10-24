@@ -1,7 +1,7 @@
 #######################################################################################
 # Yourname: Nawachart Ongcharoen
 # Your student ID: 66070100
-# Your GitHub Repo: https://github.com/IT2166070100/IPA2024-Final
+# Your GitHub Repo: https://github.com/IT2166070100/IPA2025-Final-Exam
 
 #######################################################################################
 # 1. Import libraries for API requests, JSON formatting, time, os, (restconf_final or netconf_final), netmiko_final, and ansible_final.
@@ -16,8 +16,8 @@ import netmiko_final as netmiko
 import ansible_final as ansible
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 from dotenv import load_dotenv
-
 load_dotenv()
+
 #######################################################################################
 # 2. Assign the Webex access token to the variable ACCESS_TOKEN using environment variables.
 
@@ -27,10 +27,9 @@ ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN")
 # 3. Prepare parameters get the latest message for messages API.
 
 # Defines a variable that will hold the roomId
-
 roomIdToGetMessages = os.environ.get("WEBEX_ROOM_ID")
 
-
+# For storing selected method and IP
 selected_method = None
 selected_ip = None
 
@@ -43,7 +42,7 @@ while True:
     getHTTPHeader = {"Authorization": 'Bearer {}'.format(ACCESS_TOKEN)}
 
 # 4. Provide the URL to the Webex Teams messages API, and extract location from the received message.
-    
+
     # Send a GET request to the Webex Teams messages API.
     # - Use the GetParameters to get only the latest message.
     # - Store the message in the "r" variable.
@@ -91,12 +90,14 @@ while True:
                 selected_method = parts[0].lower()
                 responseMessage = f"Ok: {selected_method.capitalize()}"
             elif len(parts) == 2:
-                # Assume netconf
-                selected_method = "netconf"
+                # Assume netconf            #----------------------------------------------------------------------------
+                selected_method = "netconf" #----------------------------------------------------------------------------
                 ip_candidate = parts[0]
                 command = parts[1].lower()
+                # Check IP and command
                 if ip_candidate.count(".") != 3:
                     responseMessage = "Error: Invalid IP format"
+                # check command
                 elif command not in ["create", "delete", "enable", "disable", "status", "gigabit_status", "showrun", "motd"]:
                     responseMessage = "Error: No command found."
                 else:

@@ -17,22 +17,22 @@ def create(router_ip):
     m = get_manager(router_ip)
     try:
         netconf_config = f"""
-<config>
-    <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
-        <interface operation="create">
-            <name>Loopback{studentID}</name>
-            <type xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type">ianaift:softwareLoopback</type>
-            <enabled>true</enabled>
-            <ipv4 xmlns="urn:ietf:params:xml:ns:yang:ietf-ip">
-                <address>
-                    <ip>172.1.0.1</ip>
-                    <netmask>255.255.255.0</netmask>
-                </address>
-            </ipv4>
-        </interface>
-    </interfaces>
-</config>
-"""
+            <config>
+                <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+                    <interface operation="create">
+                        <name>Loopback{studentID}</name>
+                        <type xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type">ianaift:softwareLoopback</type>
+                        <enabled>true</enabled>
+                        <ipv4 xmlns="urn:ietf:params:xml:ns:yang:ietf-ip">
+                            <address>
+                                <ip>172.1.0.1</ip>
+                                <netmask>255.255.255.0</netmask>
+                            </address>
+                        </ipv4>
+                    </interface>
+                </interfaces>
+            </config>
+        """
 
         netconf_reply = netconf_edit_config(netconf_config, m)
         xml_data = netconf_reply.xml
@@ -62,14 +62,14 @@ def delete(router_ip):
     m = get_manager(router_ip)
     try:
         netconf_config = f"""
-<config>
-    <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
-        <interface operation="delete">
-            <name>Loopback{studentID}</name>
-        </interface>
-    </interfaces>
-</config>
-"""
+            <config>
+                <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+                    <interface operation="delete">
+                        <name>Loopback{studentID}</name>
+                    </interface>
+                </interfaces>
+            </config>
+        """
 
         netconf_reply = netconf_edit_config(netconf_config, m)
         xml_data = netconf_reply.xml
@@ -105,15 +105,15 @@ def enable(router_ip):
     m = get_manager(router_ip)
     try:
         netconf_config = f"""
-<config>
-    <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
-        <interface>
-            <name>Loopback{studentID}</name>
-            <enabled>true</enabled>
-        </interface>
-    </interfaces>
-</config>
-"""
+            <config>
+                <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+                    <interface>
+                        <name>Loopback{studentID}</name>
+                        <enabled>true</enabled>
+                    </interface>
+                </interfaces>
+            </config>
+        """
 
         # Using "merge" operation, which is the default.
         netconf_reply = netconf_edit_config(netconf_config, m)
@@ -148,15 +148,15 @@ def disable(router_ip):
     m = get_manager(router_ip)
     try:
         netconf_config = f"""
-<config>
-    <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
-        <interface>
-            <name>Loopback{studentID}</name>
-            <enabled>false</enabled>
-        </interface>
-    </interfaces>
-</config>
-"""
+            <config>
+                <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+                    <interface>
+                        <name>Loopback{studentID}</name>
+                        <enabled>false</enabled>
+                    </interface>
+                </interfaces>
+            </config>
+        """
 
         # Using "merge" operation, which is the default.
         netconf_reply = netconf_edit_config(netconf_config, m)
@@ -187,14 +187,14 @@ def status(router_ip):
     m = get_manager(router_ip)
     try:
         netconf_filter = f"""
-<filter>
-<interfaces-state xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
-    <interface>
-        <name>Loopback{studentID}</name>
-    </interface>
-</interfaces-state>
-</filter>
-"""
+            <filter>
+            <interfaces-state xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+                <interface>
+                    <name>Loopback{studentID}</name>
+                </interface>
+            </interfaces-state>
+            </filter>
+        """
 
         # Use Netconf operational operation to get interfaces-state information
         netconf_reply = m.get(filter=netconf_filter)
