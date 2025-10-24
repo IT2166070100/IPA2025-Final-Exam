@@ -32,3 +32,18 @@ def gigabit_status():
         ans = f"{ans[:-1]} -> {up} up, {down} down, {admin_down} administratively down"
         pprint(ans)
         return ans
+
+
+def motd_get(router_ip):
+    device_params = {
+        "device_type": "cisco_ios",
+        "ip": router_ip,
+        "username": "admin",
+        "password": "cisco",
+    }
+    with ConnectHandler(**device_params) as ssh:
+        result = ssh.send_command("show banner motd")
+        if result.strip() == "":
+            return "Error: No MOTD Configured"
+        else:
+            return result.strip()

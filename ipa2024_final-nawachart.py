@@ -12,7 +12,7 @@ import time
 import os
 import restconf_final as restconf
 import netconf_final as netconf
-# import netmiko_final as netmiko
+import netmiko_final as netmiko
 import ansible_final as ansible
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 from dotenv import load_dotenv
@@ -81,7 +81,8 @@ while True:
 
     if message.startswith("/66070100 "):
         # Remove the prefix and split the rest
-        parts = message[len("/66070100 "):].strip().split()
+        rest = message[len("/66070100 "):].strip()
+        parts = rest.split(' ', 2)  # Split into at most 3 parts: ip, command, message
         responseMessage = None
         command = None  # Initialize command
 
@@ -96,7 +97,7 @@ while True:
                 command = parts[1].lower()
                 if ip_candidate.count(".") != 3:
                     responseMessage = "Error: Invalid IP format"
-                elif command not in ["create", "delete", "enable", "disable", "status", "gigabit_status", "showrun"]:
+                elif command not in ["create", "delete", "enable", "disable", "status", "gigabit_status", "showrun", "motd"]:
                     responseMessage = "Error: No command found."
                 else:
                     selected_ip = ip_candidate
@@ -114,6 +115,21 @@ while True:
                         responseMessage = "Netconf not implemented yet"
                     elif command == "showrun":
                         responseMessage = ansible.showrun()
+                    elif command == "motd":
+                        responseMessage = netmiko.motd_get(selected_ip)
+            elif len(parts) == 3:
+                selected_method = "netconf"  # dummy
+                ip_candidate = parts[0]
+                command = parts[1].lower()
+                motd_message = parts[2]
+                if command == "motd":
+                    if ip_candidate.count(".") != 3:
+                        responseMessage = "Error: Invalid IP format"
+                    else:
+                        selected_ip = ip_candidate
+                        responseMessage = ansible.motd_set(selected_ip, motd_message)
+                else:
+                    responseMessage = "Error: Invalid command"
             else:
                 responseMessage = "Error: No method specified"
         else:
@@ -122,7 +138,7 @@ while True:
                 if parts[0].lower() in ["restconf", "netconf"]:
                     selected_method = parts[0].lower()
                     responseMessage = f"Ok: {selected_method.capitalize()}"
-                elif parts[0] in ["create", "delete", "enable", "disable", "status", "gigabit_status", "showrun"]:
+                elif parts[0] in ["create", "delete", "enable", "disable", "status", "gigabit_status", "showrun", "motd"]:
                     responseMessage = "Error: No IP specified"
                 else:
                     responseMessage = "Error: No command found."
@@ -131,7 +147,7 @@ while True:
                 command = parts[1].lower()
                 if ip_candidate.count(".") != 3:
                     responseMessage = "Error: Invalid IP format"
-                elif command not in ["create", "delete", "enable", "disable", "status", "gigabit_status", "showrun"]:
+                elif command not in ["create", "delete", "enable", "disable", "status", "gigabit_status", "showrun", "motd"]:
                     responseMessage = "Error: No command found."
                 else:
                     # Valid IP and command
@@ -165,6 +181,20 @@ while True:
                         responseMessage = "Netconf not implemented yet"
                     elif command == "showrun":
                         responseMessage = ansible.showrun()
+                    elif command == "motd":
+                        responseMessage = netmiko.motd_get(selected_ip)
+            elif len(parts) == 3:
+                ip_candidate = parts[0]
+                command = parts[1].lower()
+                motd_message = parts[2]
+                if command == "motd":
+                    if ip_candidate.count(".") != 3:
+                        responseMessage = "Error: Invalid IP format"
+                    else:
+                        selected_ip = ip_candidate
+                        responseMessage = ansible.motd_set(selected_ip, motd_message)
+                else:
+                    responseMessage = "Error: Invalid command"
             else:
                 responseMessage = "Error: Invalid message format"
 

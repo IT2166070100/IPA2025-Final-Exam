@@ -1,0 +1,11 @@
+---
+- name: SET MOTD BANNER
+  hosts: all
+  gather_facts: false
+
+  tasks:
+  - name: SET MOTD BANNER
+    ios_banner:
+      banner: motd
+      text: "{{ motd_message }}"
+      state: present
