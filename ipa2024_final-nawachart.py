@@ -26,20 +26,17 @@ ACCESS_TOKEN = os.environ.get("ACCESS_TOKEN")
 # 3. Prepare parameters get the latest message for messages API.
 
 # Defines a variable that will hold the roomId
-roomIdToGetMessages = (
-    os.environ.get("WEBEX_ROOM_ID")
-)
+
+roomIdToGetMessages = os.environ.get("WEBEX_ROOM_ID")
+
+selected_method = None
 
 while True:
     # always add 1 second of delay to the loop to not go over a rate limit of API calls
     time.sleep(1)
 
     # the Webex Teams GET parameters
-    #  "roomId" is the ID of the selected room
-    #  "max": 1  limits to get only the very last message in the room
     getParameters = {"roomId": roomIdToGetMessages, "max": 1}
-
-    # the Webex Teams HTTP header, including the Authoriztion
     getHTTPHeader = {"Authorization": 'Bearer {}'.format(ACCESS_TOKEN)}
 
 # 4. Provide the URL to the Webex Teams messages API, and extract location from the received message.
@@ -72,33 +69,50 @@ while True:
     message = messages[0]["text"]
     print("Received message: " + message)
 
+
     # check if the text of the message starts with the magic character "/" followed by your studentID and a space and followed by a command name
     #  e.g.  "/66070123 create"
-    if message.startswith("/66070100 "): 
-
+    if message.startswith("/66070100 "):
         # extract the command
-        command = message.split("/66070100 ")[1].split(" ")[0].lower().strip() #-----------------------------------------
+        command = message.split("/66070100 ")[1].split(" ")[0].lower().strip()
         print(command)
 
-# 5. Complete the logic for each command
-
-        if command == "create":
-            responseMessage = restconf.create()             #------------------
-        elif command == "delete":
-            responseMessage = restconf.delete()             #------------------
-        elif command == "enable":
-            responseMessage = restconf.enable()             #------------------
-        elif command == "disable":
-            responseMessage = restconf.disable()            #------------------
-        elif command == "status":
-            responseMessage = restconf.status()             #------------------
-        elif command == "gigabit_status":
-            responseMessage = netmiko.gigabit_status()     #------------------
-        elif command == "showrun":
-            responseMessage = ansible.showrun()            #------------------
+        # Check for method selection first
+        if command == "restconf":
+            selected_method = "restconf"
+            responseMessage = "Ok: Restconf"
+        elif command == "netconf":
+            selected_method = "netconf"
+            responseMessage = "Ok: Netconf"
+        # Only allow config commands if method is set
+        elif command in ["create", "delete", "enable", "disable", "status", "gigabit_status", "showrun"]:
+            if not selected_method:
+                responseMessage = "Error: No method specified"
+            else:
+                if selected_method == "restconf":
+                    if command == "create":
+                        responseMessage = restconf.create()
+                    elif command == "delete":
+                        responseMessage = restconf.delete()
+                    elif command == "enable":
+                        responseMessage = restconf.enable()
+                    elif command == "disable":
+                        responseMessage = restconf.disable()
+                    elif command == "status":
+                        responseMessage = restconf.status()
+                    else:
+                        responseMessage = "Error: No command found."
+                elif selected_method == "netconf":
+                    # TOBE ADDED NETCONF ------------------------------------------------------------------------------------------------
+                    responseMessage = "Ok: Netconf"
+                # For gigabit_status and showrun
+                if command == "gigabit_status":
+                    responseMessage = netmiko.gigabit_status()
+                elif command == "showrun":
+                    responseMessage = ansible.showrun()
         else:
-            responseMessage = "Error: No command or unknown command"
-        
+            responseMessage = "Error: No command found."
+
 # 6. Complete the code to post the message to the Webex Teams room.
 
         # The Webex Teams POST JSON data for command showrun
