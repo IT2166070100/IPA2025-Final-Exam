@@ -11,6 +11,7 @@ import json
 import time
 import os
 import restconf_final as restconf
+import netconf_final as netconf
 # import netmiko_final as netmiko
 import ansible_final as ansible
 from requests_toolbelt.multipart.encoder import MultipartEncoder
@@ -86,8 +87,8 @@ while True:
                 selected_method = parts[0].lower()
                 responseMessage = f"Ok: {selected_method.capitalize()}"
             elif len(parts) == 2:
-                # Assume restconf
-                selected_method = "restconf"
+                # Assume netconf
+                selected_method = "netconf"
                 ip_candidate = parts[0]
                 command = parts[1].lower()
                 if ip_candidate.count(".") != 3:
@@ -97,15 +98,15 @@ while True:
                 else:
                     selected_ip = ip_candidate
                     if command == "create":
-                        responseMessage = restconf.create()
+                        responseMessage = netconf.create()
                     elif command == "delete":
-                        responseMessage = restconf.delete()
+                        responseMessage = netconf.delete()
                     elif command == "enable":
-                        responseMessage = restconf.enable()
+                        responseMessage = netconf.enable()
                     elif command == "disable":
-                        responseMessage = restconf.disable()
+                        responseMessage = netconf.disable()
                     elif command == "status":
-                        responseMessage = restconf.status()
+                        responseMessage = netconf.status()
                     elif command == "gigabit_status":
                         responseMessage = "Netconf not implemented yet"
                     elif command == "showrun":
@@ -133,15 +134,30 @@ while True:
                     # Valid IP and command
                     selected_ip = ip_candidate
                     if command == "create":
-                        responseMessage = restconf.create()
+                        if selected_method == "restconf":
+                            responseMessage = restconf.create()
+                        else:
+                            responseMessage = netconf.create()
                     elif command == "delete":
-                        responseMessage = restconf.delete()
+                        if selected_method == "restconf":
+                            responseMessage = restconf.delete()
+                        else:
+                            responseMessage = netconf.delete()
                     elif command == "enable":
-                        responseMessage = restconf.enable()
+                        if selected_method == "restconf":
+                            responseMessage = restconf.enable()
+                        else:
+                            responseMessage = netconf.enable()
                     elif command == "disable":
-                        responseMessage = restconf.disable()
+                        if selected_method == "restconf":
+                            responseMessage = restconf.disable()
+                        else:
+                            responseMessage = netconf.disable()
                     elif command == "status":
-                        responseMessage = restconf.status()
+                        if selected_method == "restconf":
+                            responseMessage = restconf.status()
+                        else:
+                            responseMessage = netconf.status()
                     elif command == "gigabit_status":
                         responseMessage = "Netconf not implemented yet"
                     elif command == "showrun":

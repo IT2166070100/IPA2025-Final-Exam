@@ -17,40 +17,6 @@ basicauth = ("admin", "cisco")
 
 
 def create():
-    # yangConfig = {
-    #     "ietf-interfaces:interface": {
-    #         "name": "Loopback{}".format(studentID),
-    #         "type": "iana-if-type:softwareLoopback",
-    #         "enabled": True,
-    #         "ietf-ip:ipv4": {
-    #             "address": [
-    #                 {
-    #                     "ip": "172.1.0.1",
-    #                     "netmask": "255.255.255.0"
-    #                 }
-    #             ]
-    #         },
-    #         "ietf-ip:ipv6": {}
-    #     }
-    # }
-
-    # resp = requests.put(
-    #     #api_url = "https://10.0.15.62/restconf/data/ietf-interfaces:interfaces/interfaces=Loopback{studentID}"
-    #     f"{api_url}/ietf-interfaces:interfaces/interfaces=Loopback{studentID}", 
-    #     data=json.dumps(yangConfig), 
-    #     auth=basicauth, 
-    #     headers=headers, 
-    #     verify=False
-    #     )
-
-    # if(resp.status_code >= 200 and resp.status_code <= 299):
-    #     print("STATUS OK: {}".format(resp.status_code))
-    #     return f"Interface loopback {studentID} is created successfully"
-    # else:
-    #     print('Cannot create: Interface loopback {}'.format(studentID))
-    #     print()
-    #     return f"Undefined Error1"
-
     yangConfig = {
         "ietf-interfaces:interface": {
             "name": f"Loopback{studentID}",
