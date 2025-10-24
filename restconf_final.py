@@ -3,7 +3,7 @@ import requests
 requests.packages.urllib3.disable_warnings()
 
 # Router IP Address is 10.0.15.181-184
-api_url = "https://10.0.15.62/restconf/data"
+# api_url = "https://10.0.15.62/restconf/data"
 
 studentID = "66070100"
 
@@ -16,7 +16,8 @@ headers = {
 basicauth = ("admin", "cisco")
 
 
-def create():
+def create(router_ip):
+    api_url = f"https://{router_ip}/restconf/data"
     yangConfig = {
         "ietf-interfaces:interface": {
             "name": f"Loopback{studentID}",
@@ -46,7 +47,8 @@ def create():
 
 
 
-def delete():
+def delete(router_ip):
+    api_url = f"https://{router_ip}/restconf/data"
     resp = requests.delete(
         f"{api_url}/ietf-interfaces:interfaces/interface=Loopback{studentID}", 
         auth=basicauth, 
@@ -62,7 +64,8 @@ def delete():
         return f'Cannot delete: Interface loopback {studentID}'
 
 
-def enable():
+def enable(router_ip):
+    api_url = f"https://{router_ip}/restconf/data"
     yangConfig = {
         "ietf-interfaces:interface": {
             "name": "Loopback{}".format(studentID),
@@ -87,7 +90,8 @@ def enable():
         return f'Cannot enable: Interface loopback {studentID}'
 
 
-def disable():
+def disable(router_ip):
+    api_url = f"https://{router_ip}/restconf/data"
     yangConfig = {
         "ietf-interfaces:interface": {
             "name": f"Loopback{studentID}",
@@ -112,8 +116,8 @@ def disable():
         return f"Cannot shutdown: Interface loopback {studentID}"
 
 
-def status():
-
+def status(router_ip):
+    api_url = f"https://{router_ip}/restconf/data"
     resp = requests.get(
         f"{api_url}/ietf-interfaces:interfaces-state/interface=Loopback{studentID}", 
         auth=basicauth, 

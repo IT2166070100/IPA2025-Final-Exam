@@ -101,15 +101,15 @@ while True:
                 else:
                     selected_ip = ip_candidate
                     if command == "create":
-                        responseMessage = netconf.create()
+                        responseMessage = netconf.create(selected_ip)
                     elif command == "delete":
-                        responseMessage = netconf.delete()
+                        responseMessage = netconf.delete(selected_ip)
                     elif command == "enable":
-                        responseMessage = netconf.enable()
+                        responseMessage = netconf.enable(selected_ip)
                     elif command == "disable":
-                        responseMessage = netconf.disable()
+                        responseMessage = netconf.disable(selected_ip)
                     elif command == "status":
-                        responseMessage = netconf.status()
+                        responseMessage = netconf.status(selected_ip)
                     elif command == "gigabit_status":
                         responseMessage = "Netconf not implemented yet"
                     elif command == "showrun":
@@ -138,29 +138,29 @@ while True:
                     selected_ip = ip_candidate
                     if command == "create":
                         if selected_method == "restconf":
-                            responseMessage = restconf.create()
+                            responseMessage = restconf.create(selected_ip)
                         else:
-                            responseMessage = netconf.create()
+                            responseMessage = netconf.create(selected_ip)
                     elif command == "delete":
                         if selected_method == "restconf":
-                            responseMessage = restconf.delete()
+                            responseMessage = restconf.delete(selected_ip)
                         else:
-                            responseMessage = netconf.delete()
+                            responseMessage = netconf.delete(selected_ip)
                     elif command == "enable":
                         if selected_method == "restconf":
-                            responseMessage = restconf.enable()
+                            responseMessage = restconf.enable(selected_ip)
                         else:
-                            responseMessage = netconf.enable()
+                            responseMessage = netconf.enable(selected_ip)
                     elif command == "disable":
                         if selected_method == "restconf":
-                            responseMessage = restconf.disable()
+                            responseMessage = restconf.disable(selected_ip)
                         else:
-                            responseMessage = netconf.disable()
+                            responseMessage = netconf.disable(selected_ip)
                     elif command == "status":
                         if selected_method == "restconf":
-                            responseMessage = restconf.status()
+                            responseMessage = restconf.status(selected_ip)
                         else:
-                            responseMessage = netconf.status()
+                            responseMessage = netconf.status(selected_ip)
                     elif command == "gigabit_status":
                         responseMessage = "Netconf not implemented yet"
                     elif command == "showrun":

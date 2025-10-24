@@ -4,16 +4,19 @@ import xmltodict
 # Router IP Address is 10.0.15.62
 studentID = "66070100"
 
-m = manager.connect(
-    host="10.0.15.62",
-    port=830,
-    username="admin",
-    password="cisco",
-    hostkey_verify=False
+def get_manager(router_ip):
+    return manager.connect(
+        host=router_ip,
+        port=830,
+        username="admin",
+        password="cisco",
+        hostkey_verify=False
     )
 
-def create():
-    netconf_config = f"""
+def create(router_ip):
+    m = get_manager(router_ip)
+    try:
+        netconf_config = f"""
 <config>
     <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
         <interface operation="create">
@@ -31,8 +34,7 @@ def create():
 </config>
 """
 
-    try:
-        netconf_reply = netconf_edit_config(netconf_config)
+        netconf_reply = netconf_edit_config(netconf_config, m)
         xml_data = netconf_reply.xml
         print(xml_data)
         if '<ok/>' in xml_data:
@@ -44,10 +46,22 @@ def create():
         # This block will be executed if the interface already exists, because "operation='create'" will cause an error.
         print(f"Error in create (likely because interface exists): {e}")
         return f"Cannot create: Interface loopback {studentID}"
+    finally:
+        try:
+            m.close_session()
+        except Exception:
+            try:
+                # best-effort fallback to transport close if available
+                if hasattr(m, 'transport') and hasattr(m.transport, 'close'):
+                    m.transport.close()
+            except Exception:
+                pass
 
 
-def delete():
-    netconf_config = f"""
+def delete(router_ip):
+    m = get_manager(router_ip)
+    try:
+        netconf_config = f"""
 <config>
     <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
         <interface operation="delete">
@@ -57,8 +71,7 @@ def delete():
 </config>
 """
 
-    try:
-        netconf_reply = netconf_edit_config(netconf_config)
+        netconf_reply = netconf_edit_config(netconf_config, m)
         xml_data = netconf_reply.xml
         print(xml_data)
         if '<ok/>' in xml_data:
@@ -70,17 +83,28 @@ def delete():
         # This block will be executed if the interface does not exist, because "operation='delete'" on a non-existent interface will cause an error.
         print(f"Error in delete (likely because interface does not exist): {e}")
         return f"Cannot delete: Interface loopback {studentID}"
+    finally:
+        try:
+            m.close_session()
+        except Exception:
+            try:
+                if hasattr(m, 'transport') and hasattr(m.transport, 'close'):
+                    m.transport.close()
+            except Exception:
+                pass
 
 
-def enable():
+def enable(router_ip):
     # First, check the interface's current status.
-    status_result = status()
-    if f"Interface loopback {studentID} is enabled" in status_result:
+    status_result = status(router_ip)
+    if "is enabled" in status_result:
         return f"Cannot enable: Interface loopback {studentID}"
     if "No Interface" in status_result:
         return f"Cannot enable: Interface loopback {studentID}"
 
-    netconf_config = f"""
+    m = get_manager(router_ip)
+    try:
+        netconf_config = f"""
 <config>
     <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
         <interface>
@@ -91,9 +115,8 @@ def enable():
 </config>
 """
 
-    try:
         # Using "merge" operation, which is the default.
-        netconf_reply = netconf_edit_config(netconf_config)
+        netconf_reply = netconf_edit_config(netconf_config, m)
         xml_data = netconf_reply.xml
         print(xml_data)
         if '<ok/>' in xml_data:
@@ -103,17 +126,28 @@ def enable():
     except Exception as e:
         print(f"Error in enable: {e}")
         return f"Cannot enable: Interface loopback {studentID}"
+    finally:
+        try:
+            m.close_session()
+        except Exception:
+            try:
+                if hasattr(m, 'transport') and hasattr(m.transport, 'close'):
+                    m.transport.close()
+            except Exception:
+                pass
 
 
-def disable():
+def disable(router_ip):
     # First, check the interface's current status.
-    status_result = status()
-    if f"Interface loopback {studentID} is disabled" in status_result:
+    status_result = status(router_ip)
+    if "is disabled" in status_result:
         return f"Cannot shutdown: Interface loopback {studentID} (checked by Netconf)"
     if "No Interface" in status_result:
         return f"Cannot shutdown: Interface loopback {studentID} (checked by Netconf)"
 
-    netconf_config = f"""
+    m = get_manager(router_ip)
+    try:
+        netconf_config = f"""
 <config>
     <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
         <interface>
@@ -124,9 +158,8 @@ def disable():
 </config>
 """
 
-    try:
         # Using "merge" operation, which is the default.
-        netconf_reply = netconf_edit_config(netconf_config)
+        netconf_reply = netconf_edit_config(netconf_config, m)
         xml_data = netconf_reply.xml
         print(xml_data)
         if '<ok/>' in xml_data:
@@ -136,13 +169,24 @@ def disable():
     except Exception as e:
         print(f"Error in disable: {e}")
         return f"Cannot disable: Interface loopback {studentID}"
+    finally:
+        try:
+            m.close_session()
+        except Exception:
+            try:
+                if hasattr(m, 'transport') and hasattr(m.transport, 'close'):
+                    m.transport.close()
+            except Exception:
+                pass
 
-def netconf_edit_config(netconf_config):
+def netconf_edit_config(netconf_config, m):
     return m.edit_config(target='running', config=netconf_config)
 
 
-def status():
-    netconf_filter = f"""
+def status(router_ip):
+    m = get_manager(router_ip)
+    try:
+        netconf_filter = f"""
 <filter>
 <interfaces-state xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
     <interface>
@@ -152,7 +196,6 @@ def status():
 </filter>
 """
 
-    try:
         # Use Netconf operational operation to get interfaces-state information
         netconf_reply = m.get(filter=netconf_filter)
         netconf_reply_dict = xmltodict.parse(netconf_reply.xml)
@@ -176,3 +219,12 @@ def status():
     except Exception as e:
        print(f"Error in status: {e}")
        return f"No Interface loopback {studentID} (checked by Netconf)"
+    finally:
+        try:
+            m.close_session()
+        except Exception:
+            try:
+                if hasattr(m, 'transport') and hasattr(m.transport, 'close'):
+                    m.transport.close()
+            except Exception:
+                pass
