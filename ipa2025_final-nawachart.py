@@ -90,47 +90,47 @@ while True:
                 selected_method = parts[0].lower()
                 responseMessage = f"Ok: {selected_method.capitalize()}"
             elif len(parts) == 2:
-                # Assume netconf            #----------------------------------------------------------------------------
-                selected_method = "netconf" #----------------------------------------------------------------------------
-                ip_candidate = parts[0]
-                command = parts[1].lower()
-                # Check IP and command
-                if ip_candidate.count(".") != 3:
-                    responseMessage = "Error: Invalid IP format"
-                # check command
-                elif command not in ["create", "delete", "enable", "disable", "status", "gigabit_status", "showrun", "motd"]:
-                    responseMessage = "Error: No command found."
-                else:
-                    selected_ip = ip_candidate
-                    if command == "create":
-                        responseMessage = netconf.create(selected_ip)
-                    elif command == "delete":
-                        responseMessage = netconf.delete(selected_ip)
-                    elif command == "enable":
-                        responseMessage = netconf.enable(selected_ip)
-                    elif command == "disable":
-                        responseMessage = netconf.disable(selected_ip)
-                    elif command == "status":
-                        responseMessage = netconf.status(selected_ip)
-                    elif command == "gigabit_status":
-                        responseMessage = "Netconf not implemented yet"
-                    elif command == "showrun":
-                        responseMessage = ansible.showrun()
-                    elif command == "motd":
-                        responseMessage = netmiko.motd_get(selected_ip)
+                # # Assume netconf            
+                # selected_method = "netconf" 
+                # ip_candidate = parts[0]
+                # command = parts[1].lower()
+                # # Check IP and command
+                # if ip_candidate.count(".") != 3:
+                #     responseMessage = "Error: Invalid IP format"
+                # # check command
+                # elif command not in ["create", "delete", "enable", "disable", "status", "gigabit_status", "showrun", "motd"]:
+                #     responseMessage = "Error: No command found."
+                # else:
+                #     selected_ip = ip_candidate
+                #     if command == "create":
+                #         responseMessage = netconf.create(selected_ip)
+                #     elif command == "delete":
+                #         responseMessage = netconf.delete(selected_ip)
+                #     elif command == "enable":
+                #         responseMessage = netconf.enable(selected_ip)
+                #     elif command == "disable":
+                #         responseMessage = netconf.disable(selected_ip)
+                #     elif command == "status":
+                #         responseMessage = netconf.status(selected_ip)
+                #     elif command == "gigabit_status":
+                #         responseMessage = "Netconf not implemented yet"
+                #     elif command == "showrun":
+                #         responseMessage = ansible.showrun()
+                #     elif command == "motd":
+                #         responseMessage = netmiko.motd_get(selected_ip)
             elif len(parts) == 3:
-                selected_method = "netconf"  # dummy
-                ip_candidate = parts[0]
-                command = parts[1].lower()
-                motd_message = parts[2]
-                if command == "motd":
-                    if ip_candidate.count(".") != 3:
-                        responseMessage = "Error: Invalid IP format"
-                    else:
-                        selected_ip = ip_candidate
-                        responseMessage = ansible.motd_set(selected_ip, motd_message)
-                else:
-                    responseMessage = "Error: Invalid command"
+                # selected_method = "netconf"  # dummy
+                # ip_candidate = parts[0]
+                # command = parts[1].lower()
+                # motd_message = parts[2]
+                # if command == "motd":
+                #     if ip_candidate.count(".") != 3:
+                #         responseMessage = "Error: Invalid IP format"
+                #     else:
+                #         selected_ip = ip_candidate
+                #         responseMessage = ansible.motd_set(selected_ip, motd_message)
+                # else:
+                #     responseMessage = "Error: Invalid command"
             else:
                 responseMessage = "Error: No method specified"
         else:
@@ -214,34 +214,34 @@ while True:
         # https://developer.webex.com/docs/basics for more detail
 
         if command == "showrun" and isinstance(responseMessage, dict) and responseMessage.get("msg") == 'ok':
-            local_filepath = "backups/show_run_66070100_IPA-Router2.txt"  #----------------------------------------------------------------------
+            local_filepath = "backups/show_run_66070100_IPA-Router2.txt"  
             upload_filename = "show_run_66070100_IPA-Router2.txt"
             fileobject = open(local_filepath, "rb")
-            filetype = "text/plain"    #----------------------------------------------------------------------
+            filetype = "text/plain"    
             postData = {
                 "roomId": roomIdToGetMessages,
                 "text": "show running config",
-                "files": (upload_filename, fileobject, filetype),          #----------------------------------------------------------------------
+                "files": (upload_filename, fileobject, filetype),          
             }
-            postData = MultipartEncoder(postData)                   #----------------------------------------------------------------------
+            postData = MultipartEncoder(postData)                   
             HTTPHeaders = {
             "Authorization": 'Bearer {}'.format(ACCESS_TOKEN),
-            "Content-Type": postData.content_type,                       #----------------------------------------------------------------------
+            "Content-Type": postData.content_type,                       
             }
         # other commands only send text, or no attached file.
         else:
             msg_to_send = str(responseMessage)
-            postData = {"roomId": roomIdToGetMessages, "text": msg_to_send} #----------------------------------------------------------------------
+            postData = {"roomId": roomIdToGetMessages, "text": msg_to_send} 
             postData = json.dumps(postData)
 
             # the Webex Teams HTTP headers, including the Authoriztion and Content-Type
-            HTTPHeaders = {"Authorization": 'Bearer {}'.format(ACCESS_TOKEN), "Content-Type": "application/json"}   #----------------------------------------------------------------------
+            HTTPHeaders = {"Authorization": 'Bearer {}'.format(ACCESS_TOKEN), "Content-Type": "application/json"}   
 
         # Post the call to the Webex Teams message API.
         r = requests.post(
-            "https://webexapis.com/v1/messages",                            #----------------------------------------------------------------------
-            data=postData,                                                  #----------------------------------------------------------------------
-            headers=HTTPHeaders,                                            #----------------------------------------------------------------------
+            "https://webexapis.com/v1/messages",                            
+            data=postData,                                                  
+            headers=HTTPHeaders,                                            
         )
         if not r.status_code == 200:
             raise Exception(
