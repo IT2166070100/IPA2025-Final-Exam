@@ -69,8 +69,11 @@ while True:
     messages = json_data["items"]
     
     # store the text of the first message in the array
-    message = messages[0]["text"]
-    print("Received message: " + message)
+    if len(messages) > 0 and "text" in messages[0]:
+        message = messages[0]["text"]
+        print("Received message: " + message)
+    else:
+        continue  # Skip this iteration if no valid text message
 
 
     # check if the text of the message starts with the magic character "/" followed by your studentID and a space and followed by a command name

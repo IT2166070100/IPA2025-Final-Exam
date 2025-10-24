@@ -73,29 +73,69 @@ def delete():
 
 
 def enable():
-    netconf_config = """<!!!REPLACEME with YANG data!!!>"""
+    # First, check the interface's current status.
+    status_result = status()
+    if f"Interface loopback {studentID} is enabled" in status_result:
+        return f"Interface loopback {studentID} is already enabled."
+    if "No Interface" in status_result:
+        return f"Cannot enable: Interface loopback {studentID} does not exist."
+
+    netconf_config = f"""
+<config>
+    <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+        <interface>
+            <name>Loopback{studentID}</name>
+            <enabled>true</enabled>
+        </interface>
+    </interfaces>
+</config>
+"""
 
     try:
+        # Using "merge" operation, which is the default.
         netconf_reply = netconf_edit_config(netconf_config)
         xml_data = netconf_reply.xml
         print(xml_data)
         if '<ok/>' in xml_data:
-            return "<!!!REPLACEME with proper message!!!>"
-    except:
-        print("Error!")
+            return f"Interface loopback {studentID} is enabled successfully using Netconf"
+        else:
+            return f"Cannot enable: Interface loopback {studentID}"
+    except Exception as e:
+        print(f"Error in enable: {e}")
+        return f"Cannot enable: Interface loopback {studentID}"
 
 
 def disable():
-    netconf_config = """<!!!REPLACEME with YANG data!!!>"""
+    # First, check the interface's current status.
+    status_result = status()
+    if f"Interface loopback {studentID} is disabled" in status_result:
+        return f"Interface loopback {studentID} is already disabled."
+    if "No Interface" in status_result:
+        return f"Cannot disable: Interface loopback {studentID} does not exist."
+
+    netconf_config = f"""
+<config>
+    <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+        <interface>
+            <name>Loopback{studentID}</name>
+            <enabled>false</enabled>
+        </interface>
+    </interfaces>
+</config>
+"""
 
     try:
+        # Using "merge" operation, which is the default.
         netconf_reply = netconf_edit_config(netconf_config)
         xml_data = netconf_reply.xml
         print(xml_data)
         if '<ok/>' in xml_data:
-            return "<!!!REPLACEME with proper message!!!>"
-    except:
-        print("Error!")
+            return f"Interface loopback {studentID} is disabled successfully using Netconf"
+        else:
+            return f"Cannot disable: Interface loopback {studentID}"
+    except Exception as e:
+        print(f"Error in disable: {e}")
+        return f"Cannot disable: Interface loopback {studentID}"
 
 def netconf_edit_config(netconf_config):
     return m.edit_config(target='running', config=netconf_config)
@@ -103,18 +143,21 @@ def netconf_edit_config(netconf_config):
 
 def status():
     netconf_filter = f"""
+<filter>
 <interfaces-state xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
     <interface>
         <name>Loopback{studentID}</name>
     </interface>
 </interfaces-state>
+</filter>
 """
 
     try:
         # Use Netconf operational operation to get interfaces-state information
         netconf_reply = m.get(filter=netconf_filter)
-        print(netconf_reply)
+        print("Netconf reply XML:", netconf_reply.xml)
         netconf_reply_dict = xmltodict.parse(netconf_reply.xml)
+        print("Parsed dict:", netconf_reply_dict)  # Add this line to debug the parsed XML
 
         # if there data return from netconf_reply_dict is not null, the operation-state of interface loopback is returned
         if ('rpc-reply' in netconf_reply_dict and 
@@ -126,12 +169,16 @@ def status():
             interface_data = netconf_reply_dict['rpc-reply']['data']['interfaces-state']['interface']
             admin_status = interface_data['admin-status']
             oper_status = interface_data['oper-status']
-            if admin_status == 'up' and oper_status == 'up':
+            if admin_status == 'up':
                 return f"Interface loopback {studentID} is enabled using Netconf"
-            elif admin_status == 'down' and oper_status == 'down':
+            elif admin_status == 'down':
                 return f"Interface loopback {studentID} is disabled using Netconf"
         else: # no operation-state data
             return f"No Interface loopback {studentID} using Netconf"
-    except:
-       print("Error!")
+    except Exception as e:
+       print(f"Error in status: {e}")
+       try:
+           print("XML was:", netconf_reply.xml)
+       except:
+           print("No XML available")
        return f"No Interface loopback {studentID} using Netconf"
