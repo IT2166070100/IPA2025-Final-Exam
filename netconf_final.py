@@ -47,16 +47,29 @@ def create():
 
 
 def delete():
-    netconf_config = """<!!!REPLACEME with YANG data!!!>"""
+    netconf_config = f"""
+<config>
+    <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+        <interface operation="delete">
+            <name>Loopback{studentID}</name>
+        </interface>
+    </interfaces>
+</config>
+"""
 
     try:
         netconf_reply = netconf_edit_config(netconf_config)
         xml_data = netconf_reply.xml
         print(xml_data)
         if '<ok/>' in xml_data:
-            return "<!!!REPLACEME with proper message!!!>"
-    except:
-        print("Error!")
+            return f"Interface loopback {studentID} is deleted successfully using Netconf"
+        else:
+            # This case might not be hit if an exception is thrown, but is here for safety
+            return f"Cannot delete: Interface loopback {studentID}"
+    except Exception as e:
+        # This block will be executed if the interface does not exist, because "operation='delete'" on a non-existent interface will cause an error.
+        print(f"Error in delete (likely because interface does not exist): {e}")
+        return f"Cannot delete: Interface loopback {studentID}"
 
 
 def enable():
