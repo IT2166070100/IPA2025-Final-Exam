@@ -35,6 +35,10 @@ def gigabit_status():
 
 
 def motd_get(router_ip):
+    valid_ips = ['10.0.15.61', '10.0.15.62', '10.0.15.63', '10.0.15.64', '10.0.15.65']
+    if router_ip not in valid_ips:
+        return "Error: No MOTD Configured"
+    
     device_params = {
         "device_type": "cisco_ios",
         "ip": router_ip,
