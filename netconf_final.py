@@ -76,9 +76,9 @@ def enable():
     # First, check the interface's current status.
     status_result = status()
     if f"Interface loopback {studentID} is enabled" in status_result:
-        return f"Interface loopback {studentID} is already enabled."
+        return f"Cannot enable: Interface loopback {studentID}"
     if "No Interface" in status_result:
-        return f"Cannot enable: Interface loopback {studentID} does not exist."
+        return f"Cannot enable: Interface loopback {studentID}"
 
     netconf_config = f"""
 <config>
@@ -109,9 +109,9 @@ def disable():
     # First, check the interface's current status.
     status_result = status()
     if f"Interface loopback {studentID} is disabled" in status_result:
-        return f"Interface loopback {studentID} is already disabled."
+        return f"Cannot shutdown: Interface loopback {studentID} (checked by Netconf)"
     if "No Interface" in status_result:
-        return f"Cannot disable: Interface loopback {studentID} does not exist."
+        return f"Cannot shutdown: Interface loopback {studentID} (checked by Netconf)"
 
     netconf_config = f"""
 <config>
@@ -130,7 +130,7 @@ def disable():
         xml_data = netconf_reply.xml
         print(xml_data)
         if '<ok/>' in xml_data:
-            return f"Interface loopback {studentID} is disabled successfully using Netconf"
+            return f"Interface loopback {studentID} is shutdowned successfully using Netconf"
         else:
             return f"Cannot disable: Interface loopback {studentID}"
     except Exception as e:
@@ -155,9 +155,7 @@ def status():
     try:
         # Use Netconf operational operation to get interfaces-state information
         netconf_reply = m.get(filter=netconf_filter)
-        print("Netconf reply XML:", netconf_reply.xml)
         netconf_reply_dict = xmltodict.parse(netconf_reply.xml)
-        print("Parsed dict:", netconf_reply_dict)  # Add this line to debug the parsed XML
 
         # if there data return from netconf_reply_dict is not null, the operation-state of interface loopback is returned
         if ('rpc-reply' in netconf_reply_dict and 
@@ -170,15 +168,11 @@ def status():
             admin_status = interface_data['admin-status']
             oper_status = interface_data['oper-status']
             if admin_status == 'up':
-                return f"Interface loopback {studentID} is enabled using Netconf"
+                return f"Interface loopback {studentID} is enabled (checked by Netconf)"
             elif admin_status == 'down':
-                return f"Interface loopback {studentID} is disabled using Netconf"
+                return f"Interface loopback {studentID} is disabled (checked by Netconf)"
         else: # no operation-state data
-            return f"No Interface loopback {studentID} using Netconf"
+            return f"No Interface loopback {studentID} (checked by Netconf)"
     except Exception as e:
        print(f"Error in status: {e}")
-       try:
-           print("XML was:", netconf_reply.xml)
-       except:
-           print("No XML available")
-       return f"No Interface loopback {studentID} using Netconf"
+       return f"No Interface loopback {studentID} (checked by Netconf)"
