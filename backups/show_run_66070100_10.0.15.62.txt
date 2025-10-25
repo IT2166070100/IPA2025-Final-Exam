@@ -1,8 +1,8 @@
 Building configuration...
 
-Current configuration : 4853 bytes
+Current configuration : 5113 bytes
 !
-! Last configuration change at 07:12:37 UTC Sat Oct 25 2025 by NETCONF
+! Last configuration change at 07:56:45 UTC Sat Oct 25 2025 by admin
 !
 version 16.9
 service config
@@ -140,6 +140,10 @@ interface Loopback66070069
  ip address 172.0.69.1 255.255.255.0
  shutdown
 !
+interface Loopback66070100
+ ip address 172.1.0.1 255.255.255.0
+ shutdown
+!
 interface Loopback66070101
  description Created by 66070101
  ip address 172.1.1.1 255.255.255.0
@@ -155,6 +159,11 @@ interface Loopback66070177
 interface Loopback66070179
  description My final2024 loopback
  ip address 172.1.79.1 255.255.255.0
+!
+interface Loopback66070191
+ description Loopback interface for student 66070191 created by RESTCONF
+ ip address 172.1.91.1 255.255.255.0
+ shutdown
 !
 interface Loopback66070200
  description My RESTCONF loopback
@@ -212,7 +221,7 @@ control-plane
 !
 !
 banner motd ^C
-ahhh
+Authorized users only! Managed by 66070001
 ^C
 !
 line con 0
