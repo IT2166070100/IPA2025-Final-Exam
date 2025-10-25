@@ -184,7 +184,7 @@ while True:
             filetype = "text/plain"    
             postData = {
                 "roomId": roomIdToGetMessages,
-                "text": f"show running config for {ip_candidate}",
+                "text": f"show running config",
                 "files": (upload_filename, fileobject, filetype),          
             }
             postData = MultipartEncoder(postData)                   

@@ -1,8 +1,8 @@
 Building configuration...
 
-Current configuration : 5136 bytes
+Current configuration : 5110 bytes
 !
-! Last configuration change at 07:00:17 UTC Sat Oct 25 2025 by admin
+! Last configuration change at 07:35:34 UTC Sat Oct 25 2025 by admin
 !
 version 16.9
 service config
@@ -145,6 +145,7 @@ interface Loopback66070077
 !
 interface Loopback66070100
  ip address 172.1.0.1 255.255.255.0
+ shutdown
 !
 interface Loopback66070101
  description Created by 66070101
@@ -220,7 +221,7 @@ control-plane
 !
 !
 banner motd ^C
-Authorized users only! Managed by 66070138
+Hello!
 ^C
 !
 line con 0

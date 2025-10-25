@@ -14,6 +14,11 @@ def get_manager(router_ip):
     )
 
 def create(router_ip):
+    # Check if interface already exists (IDEMPOTENCE CHECK)
+    status_result = status(router_ip)
+    if "No Interface" not in status_result:
+        return f"Cannot create: Interface loopback {studentID}"
+    
     m = get_manager(router_ip)
     try:
         netconf_config = f"""
@@ -40,18 +45,15 @@ def create(router_ip):
         if '<ok/>' in xml_data:
             return f"Interface loopback {studentID} is created successfully using Netconf"
         else:
-            # This case might not be hit if an exception is thrown, but is here for safety
             return f"Cannot create: Interface loopback {studentID}"
     except Exception as e:
-        # This block will be executed if the interface already exists, because "operation='create'" will cause an error.
-        print(f"Error in create (likely because interface exists): {e}")
+        print(f"Error in create: {e}")
         return f"Cannot create: Interface loopback {studentID}"
     finally:
         try:
             m.close_session()
         except Exception:
             try:
-                # best-effort fallback to transport close if available
                 if hasattr(m, 'transport') and hasattr(m.transport, 'close'):
                     m.transport.close()
             except Exception:
@@ -59,6 +61,11 @@ def create(router_ip):
 
 
 def delete(router_ip):
+    # Check if interface exists
+    status_result = status(router_ip)
+    if "No Interface" in status_result:
+        return f"Cannot delete: Interface loopback {studentID}"
+    
     m = get_manager(router_ip)
     try:
         netconf_config = f"""
@@ -77,11 +84,9 @@ def delete(router_ip):
         if '<ok/>' in xml_data:
             return f"Interface loopback {studentID} is deleted successfully using Netconf"
         else:
-            # This case might not be hit if an exception is thrown, but is here for safety
             return f"Cannot delete: Interface loopback {studentID}"
     except Exception as e:
-        # This block will be executed if the interface does not exist, because "operation='delete'" on a non-existent interface will cause an error.
-        print(f"Error in delete (likely because interface does not exist): {e}")
+        print(f"Error in delete: {e}")
         return f"Cannot delete: Interface loopback {studentID}"
     finally:
         try:
@@ -97,6 +102,7 @@ def delete(router_ip):
 def enable(router_ip):
     # First, check the interface's current status.
     status_result = status(router_ip)
+    # IDEMPOTENCE CHECK return the same message but different condition
     if "is enabled" in status_result:
         return f"Cannot enable: Interface loopback {studentID}"
     if "No Interface" in status_result:
@@ -141,9 +147,9 @@ def disable(router_ip):
     # First, check the interface's current status.
     status_result = status(router_ip)
     if "is disabled" in status_result:
-        return f"Cannot shutdown: Interface loopback {studentID} (checked by Netconf)"
+        return f"Cannot disable: Interface loopback {studentID}"
     if "No Interface" in status_result:
-        return f"Cannot shutdown: Interface loopback {studentID} (checked by Netconf)"
+        return f"Cannot disable: Interface loopback {studentID}"
 
     m = get_manager(router_ip)
     try:
