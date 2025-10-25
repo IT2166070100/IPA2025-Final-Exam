@@ -85,77 +85,83 @@ while True:
         responseMessage = None
         command = None  # Initialize command
 
-        if not selected_method:
-            if len(parts) == 1 and parts[0].lower() in ["restconf", "netconf"]:
-                selected_method = parts[0].lower()
-                responseMessage = f"Ok: {selected_method.capitalize()}"
+        # Handle commands that don't require method selection first
+        if len(parts) == 2:
+            ip_candidate = parts[0]
+            command = parts[1].lower()
+            if ip_candidate.count(".") == 3 and command in ["gigabit_status", "showrun", "motd"]:
+                if command == "gigabit_status":
+                    responseMessage = netmiko.gigabit_status(ip_candidate)
+                elif command == "showrun":
+                    responseMessage = ansible.showrun(ip_candidate)
+                elif command == "motd":
+                    responseMessage = netmiko.motd_get(ip_candidate)
             else:
-                responseMessage = "Error: No method specified"
-        else:
-            # Method selected
-            if len(parts) == 1:
-                if parts[0].lower() in ["restconf", "netconf"]:
+                # Fall back to method-based logic
+                pass  # Will be handled below
+        elif len(parts) == 3:
+            ip_candidate = parts[0]
+            command = parts[1].lower()
+            motd_message = parts[2]
+            if command == "motd" and ip_candidate.count(".") == 3:
+                responseMessage = ansible.motd_set(ip_candidate, motd_message)
+            else:
+                pass  # Fall back
+
+        if responseMessage is None:
+            # Method-based commands
+            if not selected_method:
+                if len(parts) == 1 and parts[0].lower() in ["restconf", "netconf"]:
                     selected_method = parts[0].lower()
                     responseMessage = f"Ok: {selected_method.capitalize()}"
-                elif parts[0] in ["create", "delete", "enable", "disable", "status", "gigabit_status", "showrun", "motd"]:
-                    responseMessage = "Error: No IP specified"
                 else:
-                    responseMessage = "Error: No command found."
-            elif len(parts) == 2:
-                ip_candidate = parts[0]
-                command = parts[1].lower()
-                if ip_candidate.count(".") != 3:
-                    responseMessage = "Error: Invalid IP format"
-                elif command not in ["create", "delete", "enable", "disable", "status", "gigabit_status", "showrun", "motd"]:
-                    responseMessage = "Error: No command found."
-                else:
-                    # Valid IP and command
-                    selected_ip = ip_candidate
-                    if command == "create":
-                        if selected_method == "restconf":
-                            responseMessage = restconf.create(selected_ip)
-                        else:
-                            responseMessage = netconf.create(selected_ip)
-                    elif command == "delete":
-                        if selected_method == "restconf":
-                            responseMessage = restconf.delete(selected_ip)
-                        else:
-                            responseMessage = netconf.delete(selected_ip)
-                    elif command == "enable":
-                        if selected_method == "restconf":
-                            responseMessage = restconf.enable(selected_ip)
-                        else:
-                            responseMessage = netconf.enable(selected_ip)
-                    elif command == "disable":
-                        if selected_method == "restconf":
-                            responseMessage = restconf.disable(selected_ip)
-                        else:
-                            responseMessage = netconf.disable(selected_ip)
-                    elif command == "status":
-                        if selected_method == "restconf":
-                            responseMessage = restconf.status(selected_ip)
-                        else:
-                            responseMessage = netconf.status(selected_ip)
-                    elif command == "gigabit_status":
-                        responseMessage = "Netconf not implemented yet"
-                    elif command == "showrun":
-                        responseMessage = ansible.showrun()
-                    elif command == "motd":
-                        responseMessage = netmiko.motd_get(selected_ip)
-            elif len(parts) == 3:
-                ip_candidate = parts[0]
-                command = parts[1].lower()
-                motd_message = parts[2]
-                if command == "motd":
+                    responseMessage = "Error: No method specified"
+            else:
+                # Method selected
+                if len(parts) == 1:
+                    if parts[0].lower() in ["restconf", "netconf"]:
+                        selected_method = parts[0].lower()
+                        responseMessage = f"Ok: {selected_method.capitalize()}"
+                    elif parts[0] in ["create", "delete", "enable", "disable", "status"]:
+                        responseMessage = "Error: No IP specified"
+                    else:
+                        responseMessage = "Error: No command found."
+                elif len(parts) == 2:
+                    ip_candidate = parts[0]
+                    command = parts[1].lower()
                     if ip_candidate.count(".") != 3:
                         responseMessage = "Error: Invalid IP format"
+                    elif command not in ["create", "delete", "enable", "disable", "status"]:
+                        responseMessage = "Error: No command found."
                     else:
-                        selected_ip = ip_candidate
-                        responseMessage = ansible.motd_set(selected_ip, motd_message)
+                        # Valid IP and command
+                        if command == "create":
+                            if selected_method == "restconf":
+                                responseMessage = restconf.create(ip_candidate)
+                            else:
+                                responseMessage = netconf.create(ip_candidate)
+                        elif command == "delete":
+                            if selected_method == "restconf":
+                                responseMessage = restconf.delete(ip_candidate)
+                            else:
+                                responseMessage = netconf.delete(ip_candidate)
+                        elif command == "enable":
+                            if selected_method == "restconf":
+                                responseMessage = restconf.enable(ip_candidate)
+                            else:
+                                responseMessage = netconf.enable(ip_candidate)
+                        elif command == "disable":
+                            if selected_method == "restconf":
+                                responseMessage = restconf.disable(ip_candidate)
+                            else:
+                                responseMessage = netconf.disable(ip_candidate)
+                        elif command == "status":
+                            if selected_method == "restconf":
+                                responseMessage = restconf.status(ip_candidate)
+                            else:
+                                responseMessage = netconf.status(ip_candidate)
                 else:
-                    responseMessage = "Error: Invalid command"
-            else:
-                responseMessage = "Error: Invalid message format"
+                    responseMessage = "Error: Invalid message format"
 
 # 6. Complete the code to post the message to the Webex Teams room.
 
@@ -172,13 +178,13 @@ while True:
         # https://developer.webex.com/docs/basics for more detail
 
         if command == "showrun" and isinstance(responseMessage, dict) and responseMessage.get("msg") == 'ok':
-            local_filepath = "backups/show_run_66070100_IPA-Router2.txt"  
-            upload_filename = "show_run_66070100_IPA-Router2.txt"
+            local_filepath = f"backups/show_run_66070100_{ip_candidate}.txt"  
+            upload_filename = f"show_run_66070100_{ip_candidate}.txt"
             fileobject = open(local_filepath, "rb")
             filetype = "text/plain"    
             postData = {
                 "roomId": roomIdToGetMessages,
-                "text": "show running config",
+                "text": f"show running config for {ip_candidate}",
                 "files": (upload_filename, fileobject, filetype),          
             }
             postData = MultipartEncoder(postData)                   

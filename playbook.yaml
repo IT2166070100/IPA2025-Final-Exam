@@ -1,17 +1,17 @@
 ---
-    - name: AUTOMATIC BACKUP OF RUNNING-CONFIG
-      hosts: CSR1kv
-      gather_facts: false
-     
-      tasks:
-       - name: DISPLAYING THE RUNNING-CONFIG
-         ios_command:
-           commands:
-             - show running-config  
-         register: config
-     
-       - name: SAVE OUTPUT TO ./backups/
-         copy:
-           content: "{{ config.stdout[0] }}"
-           dest: "backups/show_run_66070100_IPA-Router2.txt"
+- name: AUTOMATIC BACKUP OF RUNNING-CONFIG
+  hosts: all
+  gather_facts: false
+   
+  tasks:
+   - name: DISPLAYING THE RUNNING-CONFIG
+     ios_command:
+       commands:
+         - show running-config  
+     register: config
+   
+   - name: SAVE OUTPUT TO ./backups/
+     copy:
+       content: "{{ config.stdout[0] }}"
+       dest: "backups/show_run_66070100_{{ router_ip }}.txt"
     
